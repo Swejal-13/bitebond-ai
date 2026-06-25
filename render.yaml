@@ -1,0 +1,75 @@
+# Render Deployment Blueprint for BiteBond AI Backend
+# Deploy via: https://render.com/docs/blueprint-spec
+# Push this repo to GitHub, then on Render: New + > Blueprint > select repo
+
+services:
+  - type: web
+    name: bitebond-api
+    env: node
+    region: oregon          # change to your nearest region: oregon, ohio, frankfurt, singapore
+    plan: free               # upgrade to 'starter' for production (free tier sleeps after inactivity)
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+
+      # MongoDB Atlas — required
+      - key: MONGODB_URI
+        sync: false
+
+      # JWT — required
+      - key: JWT_SECRET
+        generateValue: true   # Render auto-generates a secure random value
+      - key: JWT_EXPIRE
+        value: 7d
+
+      # Cloudinary — required for image/video/voice uploads
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+      # Google Gemini — optional (app falls back to curated responses without it)
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # External Restaurant API — optional (app falls back to mock restaurant data without it)
+      - key: RESTAURANT_API_KEY
+        sync: false
+      - key: RESTAURANT_API_HOST
+        sync: false
+
+      # Email (Nodemailer) — required for signup verification & password reset emails
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_FROM
+        value: BiteBond AI <noreply@bitebond.app>
+
+      # Google OAuth — optional (email/password auth always works without it)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false   # set to https://your-api.onrender.com/api/auth/google/callback
+
+      # CORS — must match your deployed Vercel frontend URL
+      - key: CLIENT_URL
+        sync: false   # e.g. https://bitebond.vercel.app
+
+      - key: RESTAURANT_CACHE_TTL
+        value: 3600
